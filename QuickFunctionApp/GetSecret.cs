@@ -29,15 +29,21 @@ namespace QuickFunctionApp
                 name = data?.name;
             }
 
+            if (name == null)
+            {
+                return req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body");
+            }
+
             var azureServiceTokenProvider = new AzureServiceTokenProvider();
 
             var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
 
             string keyVaultURL = "https://quickkeyvault.vault.azure.net/";
-            var secret = await keyVaultClient.GetSecretAsync(keyVaultURL + name)
+
+            var secret = await keyVaultClient.GetSecretAsync(keyVaultURL + "secrets/" + name)
                 .ConfigureAwait(false);
 
-            return req.CreateResponse(HttpStatusCode.OK, "Key:" + name + "-- Value " + secret.Value);
+            return req.CreateResponse(HttpStatusCode.OK, "Key:" + name + "-- Value: " + secret.Value);
         }
     }
 }
